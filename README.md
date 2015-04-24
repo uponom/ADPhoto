@@ -1,7 +1,7 @@
 # ADPhoto
 Powershell module for uploading jpg-files as thumbnailPhoto AD-account attribute
 
-ADPhotos v0.2
+ADPhotos v0.3
 Загрузка фотографий пользователей/контактов в Active Directory (в атрибут thumbnailPhoto)
  
 Предварительные требования:
