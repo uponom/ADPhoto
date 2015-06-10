@@ -1,19 +1,33 @@
 ﻿<#
 .SYNOPSIS
 ADPhoto v0.3
-Uploading photos from files to Active Directory object
-Загрузка фотографий пользователей/контактов в Active Directory
+[EN] Uploading photos from files to Active Directory objects (user/contant) into thumbnailPhoto attribute
+[RU] Загрузка фотографий из файлов в объекты Active Directory (пользователь/контакт) в атрибут thumbnailPhoto
 
 .DESCRIPTION
-(English traslation comming soon.)
+[EN] 
+The module contains functions to upload the photos of users/contacts from the JPG files to Active Directory into thumbnailPhoto object's attribute.
+Supplied as a script ADPhotos.ps1
+Can be used as a script just for upload photos or it can automatically installs itself as a Powershell module (see Command line parameters).
+For install the module manually: change the file extension to .psm1 and copy it to the folder specified in environment variable PSModulePath
+
+The general principle of working:
+Photos will be taken from files which set by Path parameter, then resolution will be reduced to the value specified in ResizeTo parameter, after that file names will be compared with AD objects for the attribute specified in the ADAttr parameter and, finally, photos will be recorded in the attribute thumbnailPhoto
+
+Prerequisites:
+It is necessary to prepare the photo files - the file name must match the value passed in the parameter ADAttr. File Type: JPG
+
+[RU] 
 Модуль содержит функции для загрузки фотографий пользователей/контактов из файлов формата JPG в Active Directory в атрибут thumbnailPhoto
 Поставляется в виде скрипта ADPhotos.ps1
-Может использоваться как скрипт для загрузки фотографий либо автоматически устанавливать себя как модуль Powershell (см. параметры командной строки). Для установки модуля вручную: смените засширение файла на .psm1 и скопируйте его в папку, указанную и переменной среды окружения PSModulePath
+Может использоваться как скрипт для загрузки фотографий либо автоматически устанавливать себя как модуль Powershell (см. параметры командной строки). 
+Для установки модуля вручную: смените pасширение файла на .psm1 и скопируйте его в папку, указанную в переменной среды окружения PSModulePath
 
 Общий принцип работы функций модуля:
-Фотографии пользователей будут взяты из пути, указанного в параметре Path, разрешение будет уменьшено до значения, указанного в параметре ResizeTo, имена файлов будут сопоставлены с учетными записями в AD по атрибуту, указанному в параметре ADAttr и, в итоге, фото будут записаны в атрибут thumbnailPhoto
+Фотографии пользователей будут взяты из пути, указанного в параметре Path, разрешение будет уменьшено до значения, указанного в параметре ResizeTo, имена файлов будут сопоставлены с объектами в AD по атрибуту, указанному в параметре ADAttr и, в итоге, фото будут записаны в атрибут thumbnailPhoto
+
 Предварительные требования:
-Необходимо подготовить файлы с фотографиями пользователей - имя файла должно совпадать со значением, передаваемым в параметре ADAttr. Тип файлов: JPG
+Необходимо подготовить файлы с фотографиями - имя файла должно совпадать со значением, передаваемым в параметре ADAttr. Тип файлов: JPG
 
 .NOTES
 You can use the common parameters -Debug and -WhatIf to turn on debug output and read-only mode, respectively.
@@ -21,16 +35,19 @@ You can use the common parameters -Debug and -WhatIf to turn on debug output and
 .EXAMPLE
 ADPhoto.ps1 -Path "c:\usersphotos\11223344.jpg"
 
+This command uploads photo from the file "c:\usersphotos\11223344.jpg" into the AD object with the value of the attribute employeeID (by default) equal to 11223344. Resolution will be reduced to 128 pixels on the longest side (default value).
 Команда загрузить фото из файла "c:\usersphotos\11223344.jpg" в учетную запись, со значением атрибута employeeID (значение по умолчанию) равным 11223344, предварительно уменьшив размер фотографии до 128 пикселей по большей стороне (значение по умолчанию).
 
 .EXAMPLE
 ADPhoto.ps1 -Path "c:\usersphotos\*.jpg" -ResizeTo 192 -ADAttr EmployeeNumber -Force
 
-Команда загружает все фотограции из пути "c:\usersphotos\*.jpg" (параметр -Path), сопоставляя имя файла с учетной записью по атрибуту "EmployeeNumber" (параметр -ADAttr). Фотографии будут отмасштабированы до размера максимум 192 пикселя по большей стороне (параметр -ResizeTo) и перезаписаны, если атрибут thumbnailPhoto уже был заполнен ранее (параметр -Force).
+The command uploads all photos by wildcard specified in Path parameter ("c:\usersphotos\*.Jpg"), maps file names with AD objects' attribute "EmployeeNumber" (parameter -ADAttr). Photos will be scaled to 192 pixels maximum on the longest side (parameter -ResizeTo) and overwritten if the attribute thumbnailPhoto has already been filled earlier (parameter -Force).
+Команда загружает все фотографии из пути "c:\usersphotos\*.jpg" (параметр -Path), сопоставляя имя файла с учетной записью по атрибуту "EmployeeNumber" (параметр -ADAttr). Фотографии будут отмасштабированы до размера максимум 192 пикселя по большей стороне (параметр -ResizeTo) и перезаписаны, если атрибут thumbnailPhoto уже был заполнен ранее (параметр -Force).
 
 .EXAMPLE
 ADPhoto.ps1 -Install -Overwrire
 
+This command installs the script as a Powershell module (parameter -Install) and, if necessary, overwrites the previously installed version of the module (parameter -Overwrite)
 Команда устанавливает скрипт как модуль Powershell (параметр -Install), при необходимости перезаписывая ранее установлену версию модуля (параметр -Overwrite)
 
 .LINK
@@ -99,7 +116,7 @@ function Install-AsPSModule ([bool]$Overwrite=$true, [string]$InstallPath="") {
 			$Result = $true
 		} else {Write-Host "Installation error"}
 	} else { 
-		Write-Host "Module file is already exists and Overwrite parameter is not true. Installation cancelled." 
+		Write-Host "Module file is already exists and Overwrite parameter is not set. Installation cancelled."
 	}
 }
 #endregion Install as PS module
@@ -108,6 +125,7 @@ function Install-AsPSModule ([bool]$Overwrite=$true, [string]$InstallPath="") {
 <#
 .SYNOPSIS
 Bulk upload photo from files to AD accounts
+
 .DESCRIPTION
 Matching, resizing and uploading photos from defined path (wildcards are supported) to AD accounts (user or contact).
 Сопоставление, ресайз и загрузка фотографий пользователей из указанного пути.
@@ -136,6 +154,7 @@ function Upload-PhotosToAD {
 <#
 .SYNOPSIS
 Upload photo from file to AD account
+
 .DESCRIPTION
 Matching, optional resizing and uploading photo from defined file into AD account
 Returns ADAccount object if photo uploaded successfull. Otherwise $null
